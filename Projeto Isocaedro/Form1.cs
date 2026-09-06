@@ -16,7 +16,15 @@ namespace Projeto_Isocaedro
         public Form1()
         {
             InitializeComponent();
+            montaBotoesFace();
+            atualizaBotoesFace();
+            atualizaRotulos();
         }
+
+        // ------------------------------------------------------------------
+        // Primitivas
+        // ------------------------------------------------------------------
+
         public Color cores(int r, int g, int b)
         {
             Color cor = new Color();
@@ -27,6 +35,12 @@ namespace Projeto_Isocaedro
         public Pen caneta(int r, int g, int b)
         {
             Pen caneta = new Pen(cores(r, g, b));
+            return caneta;
+        }
+
+        public Pen caneta(int r, int g, int b, int esp)
+        {
+            Pen caneta = new Pen(cores(r, g, b), esp);
             return caneta;
         }
 
@@ -104,6 +118,11 @@ namespace Projeto_Isocaedro
 
             return pontos;
         }
+
+        // ------------------------------------------------------------------
+        // Estrutura do icosaedro
+        // ------------------------------------------------------------------
+
         private static readonly PointF[] BaseVertices = new PointF[]
         {
             new PointF( 0.0f,     0.57735f),
@@ -131,17 +150,40 @@ namespace Projeto_Isocaedro
             new Face(1, 8, 7),
         };
 
-        private const float BASE_SCALE = 120f;
-        private Color selectedColor = Color.Red;
-        
+        private const float BASE_SCALE = 280f;
+
+        // ------------------------------------------------------------------
+        // Estado da seleção e das cores
+        // ------------------------------------------------------------------
+
+        private Button[] botoesFace;
+        private List<int> facesSelecionadas = new List<int>();
+        private int ancoraSelecao = -1;
+        private Color[] coresEscolhidas = new Color[10];
+        private bool[] temCorEscolhida = new bool[10];
+        private int quantidadeCoresEscolhidas = 0;
+
+        private void montaBotoesFace()
+        {
+            botoesFace = new Button[]
+            {
+                btnFace1, btnFace2, btnFace3, btnFace4, btnFace5,
+                btnFace6, btnFace7, btnFace8, btnFace9, btnFace10
+            };
+        }
+
+        // ------------------------------------------------------------------
+        // Transformação (translação e escala)
+        // ------------------------------------------------------------------
+
         private Point[] TransformVertices()
         {
-            float scale = BASE_SCALE * (tbScale.Value / 100f);
-            double angleX = tbX.Value * Math.PI / 180.0;
-            double angleY = tbY.Value * Math.PI / 180.0;
+            float escala = BASE_SCALE * (tbScale.Value / 100f);
+            int deslocaX = tbTransX.Value;
+            int deslocaY = tbTransY.Value;
 
-            float cx = drawPanel.Width / 2f;
-            float cy = drawPanel.Height / 2f;
+            float cx = drawPanel.Width / 2f + deslocaX;
+            float cy = drawPanel.Height / 2f + deslocaY;
 
             Point[] result = new Point[BaseVertices.Length];
 
@@ -150,77 +192,337 @@ namespace Projeto_Isocaedro
                 float x0 = BaseVertices[i].X;
                 float y0 = BaseVertices[i].Y;
 
-                double rx = x0 * Math.Cos(angleX) - y0 * Math.Sin(angleX);
-                double ry = x0 * Math.Sin(angleX) + y0 * Math.Cos(angleX);
-
-                double projectedX = rx * Math.Cos(angleY);
-                double projectedY = ry * Math.Cos(angleY) + rx * Math.Sin(angleY) * 0.3;
-
-                int x = (int)(cx + (float)projectedX * scale);
-                int y = (int)(cy - (float)projectedY * scale);
+                int x = (int)(cx + x0 * escala);
+                int y = (int)(cy - y0 * escala);
 
                 result[i] = new Point(x, y);
             }
 
             return result;
         }
+
+        // ------------------------------------------------------------------
+        // Desenho
+        // ------------------------------------------------------------------
+
+        private Point[] pontosDaFace(Point[] pts, Face f)
+        {
+            int[] vx = new int[] { pts[f.VertexIndices[0]].X, pts[f.VertexIndices[1]].X, pts[f.VertexIndices[2]].X };
+            int[] vy = new int[] { pts[f.VertexIndices[0]].Y, pts[f.VertexIndices[1]].Y, pts[f.VertexIndices[2]].Y };
+            return poligono(vx, vy);
+        }
+
+        private void desenhaFaces(PaintEventArgs e, Point[] pts)
+        {
+            Pen canetaBorda = caneta(0, 0, 0);
+
+            for (int i = 0; i < faces.Length; i++)
+            {
+                Point[] tri = pontosDaFace(pts, faces[i]);
+
+                Color corFace = faces[i].FillColor;
+                if (facesSelecionadas.Contains(i))
+                {
+                    corFace = acinzentaCor(corFace);
+                }
+
+                SolidBrush pincelPreenchimento = preen_Area(corFace);
+
+                PreenchePoligono(e, pincelPreenchimento, tri);
+                desenhaPoligono(e, canetaBorda, tri);
+            }
+        }
+
+        private void desenhaSelecao(PaintEventArgs e, Point[] pts)
+        {
+            Pen canetaSelecao = caneta(105, 105, 105, 4);
+
+            for (int i = 0; i < faces.Length; i++)
+            {
+                if (facesSelecionadas.Contains(i))
+                {
+                    Point[] tri = pontosDaFace(pts, faces[i]);
+                    desenhaPoligono(e, canetaSelecao, tri);
+                }
+            }
+        }
+
         private void drawPanel_Paint(object sender, PaintEventArgs e)
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             Point[] pts = TransformVertices();
 
-            // Usa a sua primitiva 'caneta' de borda
-            Pen canetaBorda = caneta(0, 0, 0);
+            desenhaFaces(e, pts);
+            desenhaSelecao(e, pts);
+        }
 
-            for (int i = 0; i < faces.Length; i++)
+        private void drawPanel_Resize(object sender, EventArgs e)
+        {
+            drawPanel.Invalidate();
+        }
+
+        // ------------------------------------------------------------------
+        // Seleção dos números das faces
+        // ------------------------------------------------------------------
+
+        private void selecionaSimples(int indice)
+        {
+            facesSelecionadas.Clear();
+            facesSelecionadas.Add(indice);
+            ancoraSelecao = indice;
+        }
+
+        private void selecionaComControl(int indice)
+        {
+            if (facesSelecionadas.Contains(indice))
             {
-                Face f = faces[i];
+                facesSelecionadas.Remove(indice);
+            }
+            else
+            {
+                facesSelecionadas.Add(indice);
+                facesSelecionadas.Sort();
+            }
 
-                int[] vx = new int[] { pts[f.VertexIndices[0]].X, pts[f.VertexIndices[1]].X, pts[f.VertexIndices[2]].X };
-                int[] vy = new int[] { pts[f.VertexIndices[0]].Y, pts[f.VertexIndices[1]].Y, pts[f.VertexIndices[2]].Y };
-                Point[] tri = poligono(vx, vy);
+            ancoraSelecao = indice;
+        }
 
-                SolidBrush pincelPreenchimento = preen_Area(f.FillColor);
+        private void selecionaComShift(int indice)
+        {
+            if (ancoraSelecao < 0)
+            {
+                ancoraSelecao = indice;
+            }
 
-                PreenchePoligono(e, pincelPreenchimento, tri);
-                desenhaPoligono(e, canetaBorda, tri);
+            int inicio = ancoraSelecao;
+            int fim = indice;
 
-                int centroideX = (tri[0].X + tri[1].X + tri[2].X) / 3;
-                int centroideY = (tri[0].Y + tri[1].Y + tri[2].Y) / 3;
+            if (inicio > fim)
+            {
+                inicio = indice;
+                fim = ancoraSelecao;
+            }
 
-                e.Graphics.DrawString((i + 1).ToString(), this.Font, Brushes.Black, centroideX, centroideY);
+            facesSelecionadas.Clear();
+
+            for (int i = inicio; i <= fim; i++)
+            {
+                facesSelecionadas.Add(i);
             }
         }
 
-        private void drawPanel_MouseClick(object sender, MouseEventArgs e)
+        private void btnFace_Click(object sender, EventArgs e)
         {
-            Point[] pts = TransformVertices();
-
-            for (int i = 0; i < faces.Length; i++)
+            Button botao = sender as Button;
+            if (botao == null)
             {
-                Face f = faces[i];
-                Point a = pts[f.VertexIndices[0]];
-                Point b = pts[f.VertexIndices[1]];
-                Point c = pts[f.VertexIndices[2]];
+                return;
+            }
 
-                if (PointInTriangle(e.Location, a, b, c))
+            int indice = Array.IndexOf(botoesFace, botao);
+            if (indice < 0)
+            {
+                return;
+            }
+
+            if (Control.ModifierKeys == Keys.Control)
+            {
+                selecionaComControl(indice);
+            }
+            else if (Control.ModifierKeys == Keys.Shift)
+            {
+                selecionaComShift(indice);
+            }
+            else
+            {
+                selecionaSimples(indice);
+            }
+
+            limpaCoresEscolhidas();
+            atualizaBotoesFace();
+            drawPanel.Invalidate();
+        }
+
+        private void atualizaBotoesFace()
+        {
+            for (int i = 0; i < botoesFace.Length; i++)
+            {
+                Button botao = botoesFace[i];
+
+                if (temCorEscolhida[i])
                 {
-                    f.FillColor = selectedColor;
-                    drawPanel.Invalidate();
-                    return;
+                    botao.BackColor = clareiaCor(coresEscolhidas[i]);
+                    botao.ForeColor = cores(0, 0, 0);
+                    botao.FlatAppearance.BorderColor = coresEscolhidas[i];
+                    botao.FlatAppearance.BorderSize = 3;
+                }
+                else if (facesSelecionadas.Contains(i))
+                {
+                    botao.BackColor = SystemColors.Highlight;
+                    botao.ForeColor = SystemColors.HighlightText;
+                    botao.FlatAppearance.BorderColor = cores(0, 0, 0);
+                    botao.FlatAppearance.BorderSize = 3;
+                }
+                else
+                {
+                    botao.BackColor = SystemColors.Control;
+                    botao.ForeColor = cores(0, 0, 0);
+                    botao.FlatAppearance.BorderColor = cores(0, 0, 0);
+                    botao.FlatAppearance.BorderSize = 2;
                 }
             }
         }
 
-        private void tbX_ValueChanged(object sender, EventArgs e)
+        // ------------------------------------------------------------------
+        // Paleta de cores
+        // ------------------------------------------------------------------
+
+        private Color corDaPaleta(Panel amostra)
         {
-            lblX.Text = "Girar Eixo X: " + tbX.Value + "°";
+            Color cor;
+
+            switch (amostra.Name)
+            {
+                case "panelRed":
+                    cor = cores(255, 0, 0);
+                    break;
+                case "panelGreen":
+                    cor = cores(0, 255, 0);
+                    break;
+                case "panelBlue":
+                    cor = cores(0, 0, 255);
+                    break;
+                case "panelYellow":
+                    cor = cores(255, 255, 0);
+                    break;
+                case "panelCyan":
+                    cor = cores(0, 255, 255);
+                    break;
+                case "panelMagenta":
+                    cor = cores(255, 0, 255);
+                    break;
+                case "panelOrange":
+                    cor = cores(255, 165, 0);
+                    break;
+                case "panelPurple":
+                    cor = cores(128, 0, 128);
+                    break;
+                case "panelBlack":
+                    cor = cores(0, 0, 0);
+                    break;
+                case "panelGray":
+                    cor = cores(128, 128, 128);
+                    break;
+                default:
+                    cor = cores(amostra.BackColor.R, amostra.BackColor.G, amostra.BackColor.B);
+                    break;
+            }
+
+            return cor;
+        }
+
+        public Color clareiaCor(Color cor)
+        {
+            int r = (cor.R + 255 * 4) / 5;
+            int g = (cor.G + 255 * 4) / 5;
+            int b = (cor.B + 255 * 4) / 5;
+            return cores(r, g, b);
+        }
+
+        public Color acinzentaCor(Color cor)
+        {
+            int r = (cor.R * 85 + 128 * 15) / 100;
+            int g = (cor.G * 85 + 128 * 15) / 100;
+            int b = (cor.B * 85 + 128 * 15) / 100;
+            return cores(r, g, b);
+        }
+
+        private void panelCor_Click(object sender, EventArgs e)
+        {
+            Panel amostra = sender as Panel;
+            if (amostra == null)
+            {
+                return;
+            }
+
+            if (facesSelecionadas.Count == 0)
+            {
+                MessageBox.Show("Nenhum número selecionado.\nSelecione um número antes de selecionar uma cor!",
+                    "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (quantidadeCoresEscolhidas >= facesSelecionadas.Count)
+            {
+                MessageBox.Show("Todos os números selecionados já receberam uma cor.",
+                    "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            int indice = facesSelecionadas[quantidadeCoresEscolhidas];
+            coresEscolhidas[indice] = corDaPaleta(amostra);
+            temCorEscolhida[indice] = true;
+            quantidadeCoresEscolhidas++;
+
+            atualizaBotoesFace();
+        }
+
+        // ------------------------------------------------------------------
+        // Aplicação das cores
+        // ------------------------------------------------------------------
+
+        private void limpaCoresEscolhidas()
+        {
+            for (int i = 0; i < temCorEscolhida.Length; i++)
+            {
+                temCorEscolhida[i] = false;
+            }
+
+            quantidadeCoresEscolhidas = 0;
+        }
+
+        private void limpaSelecao()
+        {
+            facesSelecionadas.Clear();
+            ancoraSelecao = -1;
+        }
+
+        private void btnAplicarCores_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < faces.Length; i++)
+            {
+                if (temCorEscolhida[i])
+                {
+                    faces[i].FillColor = coresEscolhidas[i];
+                }
+            }
+
+            limpaCoresEscolhidas();
+            limpaSelecao();
+            atualizaBotoesFace();
             drawPanel.Invalidate();
         }
 
-        private void tbY_ValueChanged(object sender, EventArgs e)
+        // ------------------------------------------------------------------
+        // TrackBars
+        // ------------------------------------------------------------------
+
+        private void atualizaRotulos()
         {
-            lblY.Text = "Girar Eixo Y: " + tbY.Value + "°";
+            lblTransX.Text = "Translação X: " + tbTransX.Value;
+            lblTransY.Text = "Translação Y: " + tbTransY.Value;
+            lblScale.Text = "Escala: " + tbScale.Value + "%";
+        }
+
+        private void tbTransX_ValueChanged(object sender, EventArgs e)
+        {
+            lblTransX.Text = "Translação X: " + tbTransX.Value;
+            drawPanel.Invalidate();
+        }
+
+        private void tbTransY_ValueChanged(object sender, EventArgs e)
+        {
+            lblTransY.Text = "Translação Y: " + tbTransY.Value;
             drawPanel.Invalidate();
         }
 
@@ -229,68 +531,8 @@ namespace Projeto_Isocaedro
             lblScale.Text = "Escala: " + tbScale.Value + "%";
             drawPanel.Invalidate();
         }
-
-        private void Form1_Click(object sender, EventArgs e)
-        {
-            Panel swatch = sender as Panel;
-            if (swatch != null)
-            {
-                // Identifica a caixa selecionada pelo Name e define a cor usando a primitiva 'cores'
-                switch (swatch.Name)
-                {
-                    case "panelRed":
-                        selectedColor = cores(255, 0, 0);
-                        break;
-                    case "panelGreen":
-                        selectedColor = cores(0, 255, 0);
-                        break;
-                    case "panelBlue":
-                        selectedColor = cores(0, 0, 255);
-                        break;
-                    case "panelYellow":
-                        selectedColor = cores(255, 255, 0);
-                        break;
-                    case "panelCyan":
-                        selectedColor = cores(0, 255, 255);
-                        break;
-                    case "panelMagenta":
-                        selectedColor = cores(255, 0, 255);
-                        break;
-                    case "panelOrange":
-                        selectedColor = cores(255, 165, 0);
-                        break;
-                    case "panelPurple":
-                        selectedColor = cores(128, 0, 128);
-                        break;
-                    case "panelBlack":
-                        selectedColor = cores(0, 0, 0);
-                        break;
-                    case "panelGray":
-                        selectedColor = cores(128, 128, 128);
-                        break;
-                    default:
-                        selectedColor = cores(swatch.BackColor.R, swatch.BackColor.G, swatch.BackColor.B);
-                        break;
-                }
-            }
-        }
-        private static bool PointInTriangle(PointF p, PointF a, PointF b, PointF c)
-        {
-            float d1 = Sign(p, a, b);
-            float d2 = Sign(p, b, c);
-            float d3 = Sign(p, c, a);
-
-            bool temNegativo = (d1 < 0) || (d2 < 0) || (d3 < 0);
-            bool temPositivo = (d1 > 0) || (d2 > 0) || (d3 > 0);
-
-            return !(temNegativo && temPositivo);
-        }
-
-        private static float Sign(PointF p1, PointF p2, PointF p3)
-        {
-            return (p1.X - p3.X) * (p2.Y - p3.Y) - (p2.X - p3.X) * (p1.Y - p3.Y);
-        }
     }
+
     public class Face
     {
         public int[] VertexIndices;
