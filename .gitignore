@@ -1,0 +1,16 @@
+# Pastas de cache e estado do Visual Studio
+.vs/
+
+# Saídas de build
+[Bb]in/
+[Oo]bj/
+
+# Arquivos de usuário (preferências locais, não fazem parte do projeto)
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Extras comuns do Visual Studio
+*.vsidx
+*.ide/
