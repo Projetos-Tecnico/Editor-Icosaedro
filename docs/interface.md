@@ -32,19 +32,25 @@ Escala: 100%
 
 ## Seleção dos números
 
-Os dez botões numerados usam o mesmo comportamento do Windows Explorer. O
-modificador é lido de `Control.ModifierKeys` dentro de `btnFace_Click`, que
-delega para uma das três funções de seleção:
+Os dez botões numerados usam o mesmo comportamento do Windows Explorer. Cada
+botão tem seu próprio manipulador (`btnFace1_Click` a `btnFace10_Click`) e cada
+um chama `selecionaFace` passando o próprio número — nenhum código precisa
+descobrir qual botão foi clicado. `selecionaFace` lê o modificador de
+`Control.ModifierKeys` e delega para uma das três funções de seleção:
 
 - **Clique simples** (`selecionaSimples`) — descarta a seleção anterior, deixa
   apenas o item clicado e fixa nele a âncora.
-- **Ctrl+clique** (`selecionaComControl`) — adiciona o item se ele estiver fora
-  da seleção, remove se já estiver dentro. A lista é reordenada em ordem
-  crescente a cada inclusão.
+- **Ctrl+clique** (`selecionaComControl`) — liga o item se ele estiver
+  desligado, desliga se já estiver ligado.
 - **Shift+clique** (`selecionaComShift`) — seleciona todo o intervalo entre a
   âncora e o item clicado. A âncora **não** muda, então cliques sucessivos com
   Shift sempre partem do primeiro item, crescendo ou encolhendo o intervalo. Se
   ainda não houver âncora, o próprio item clicado vira a âncora.
+
+A seleção é guardada em `bool[] faceSelecionada`, um vetor de dez posições em que
+`true` significa selecionado. Como a ordem crescente vem da própria posição no
+vetor, não existe nada a ordenar: `faceDaPosicao` percorre de 0 a 9 e sempre
+encontra os selecionados do menor número para o maior.
 
 Qualquer mudança de seleção descarta as cores ainda não aplicadas
 (`limpaCoresEscolhidas`), porque a correspondência entre números e cores depende
@@ -52,13 +58,14 @@ da seleção vigente.
 
 ### Destaque visual
 
-Um botão selecionado fica com fundo `SystemColors.Highlight`, texto branco e
-borda preta de 3 px. Na figura, as faces correspondentes recebem dois sinais
+Um botão selecionado fica com fundo azul `cores(0, 120, 215)`, texto branco e
+borda preta de 3 px; os não selecionados usam `cores(240, 240, 240)`. Na figura,
+as faces correspondentes recebem dois sinais
 combinados, desenhados em `desenhaFaces` e `desenhaSelecao`:
 
-- o preenchimento é escurecido levemente por `acinzentaCor` (85% da cor original
-  misturada com 15% de cinza), o que produz o cinza fraco nas faces ainda não
-  pintadas;
+- o preenchimento é escurecido levemente por `acinzentaCor(r, g, b)` (85% da cor
+  original misturada com 15% de cinza), o que produz o cinza fraco nas faces
+  ainda não pintadas;
 - o contorno é redesenhado com 4 px em cinza `(105,105,105)`, contrastando com a
   borda preta fina de 1 px das faces não selecionadas.
 
@@ -67,8 +74,12 @@ faces, para que nenhuma face vizinha recorte o destaque.
 
 ## Paleta de cores
 
-A paleta tem dez amostras (`Panel` com `BorderStyle` simples). O fluxo é sempre
-número primeiro, cor depois — `panelCor_Click` valida isso:
+A paleta tem dez amostras (`Panel` com `BorderStyle` simples). Cada amostra tem
+seu próprio manipulador (`panelRed_Click` a `panelGray_Click`), que chama
+`escolheCor(r, g, b)` com os três números da sua própria cor — não existe tabela
+nem busca por nome de controle. As componentes ficam guardadas em `corEscolhidaR`,
+`corEscolhidaG` e `corEscolhidaB` até o clique em **Aplicar cores**. O fluxo é
+sempre número primeiro, cor depois, e `escolheCor` valida isso:
 
 1. Sem nenhum número selecionado, exibe
    `"Nenhum número selecionado.\nSelecione um número antes de selecionar uma cor!"`

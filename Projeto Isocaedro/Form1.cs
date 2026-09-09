@@ -1,12 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+﻿/*Colegio Técnico Antônio Teixeira Fernandes (Univap)
+ * Curso Técnico em Informática - Data de Entrega: 09/09/2026
+ * Autores do Projeto: Mateus Todeschini & Heitor Pinheiro de Souza
+ *
+ * Turma: 3I
+ * Atividade Proposta em aula
+ * Observação: <colocar se houver>
+ * 
+ * 
+ * ******************************************************************/
+
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Projeto_Isocaedro
@@ -17,6 +22,7 @@ namespace Projeto_Isocaedro
         {
             InitializeComponent();
             montaBotoesFace();
+            iniciaCoresDasFaces();
             atualizaBotoesFace();
             atualizaRotulos();
         }
@@ -123,43 +129,47 @@ namespace Projeto_Isocaedro
         // Estrutura do icosaedro
         // ------------------------------------------------------------------
 
-        private static readonly PointF[] BaseVertices = new PointF[]
+        private float[] baseX = new float[]
         {
-            new PointF( 0.0f,     0.57735f),
-            new PointF(-0.5f,    -0.28868f),
-            new PointF( 0.5f,    -0.28868f),
-            new PointF( 0.0f,     1.15470f),
-            new PointF( 1.0f,     0.57735f),
-            new PointF( 1.0f,    -0.57735f),
-            new PointF( 0.0f,    -1.15470f),
-            new PointF(-1.0f,    -0.57735f),
-            new PointF(-1.0f,     0.57735f),
+             0.0f, -0.5f,  0.5f,  0.0f,  1.0f,  1.0f,  0.0f, -1.0f, -1.0f
         };
 
-        private Face[] faces = new Face[]
+        private float[] baseY = new float[]
         {
-            new Face(0, 1, 2),
-            new Face(0, 8, 1),
-            new Face(0, 2, 4),
-            new Face(1, 6, 2),
-            new Face(0, 3, 8),
-            new Face(0, 4, 3),
-            new Face(2, 5, 4),
-            new Face(1, 7, 6),
-            new Face(2, 6, 5),
-            new Face(1, 8, 7),
+             0.57735f, -0.28868f, -0.28868f,  1.15470f,  0.57735f,
+            -0.57735f, -1.15470f, -0.57735f,  0.57735f
         };
 
-        private const float BASE_SCALE = 280f;
+        private int[] faceA = new int[] { 0, 0, 0, 1, 0, 0, 2, 1, 2, 1 };
+        private int[] faceB = new int[] { 1, 8, 2, 6, 3, 4, 5, 7, 6, 8 };
+        private int[] faceC = new int[] { 2, 1, 4, 2, 8, 3, 4, 6, 5, 7 };
+
+        private int[] corFaceR = new int[10];
+        private int[] corFaceG = new int[10];
+        private int[] corFaceB = new int[10];
+
+        private float BASE_SCALE = 280f;
+
+        private void iniciaCoresDasFaces()
+        {
+            for (int i = 0; i < corFaceR.Length; i++)
+            {
+                corFaceR[i] = 245;
+                corFaceG[i] = 245;
+                corFaceB[i] = 245;
+            }
+        }
 
         // ------------------------------------------------------------------
-        // Estado da seleção e das cores
+        // Estado da selecao e das cores
         // ------------------------------------------------------------------
 
         private Button[] botoesFace;
-        private List<int> facesSelecionadas = new List<int>();
+        private bool[] faceSelecionada = new bool[10];
         private int ancoraSelecao = -1;
-        private Color[] coresEscolhidas = new Color[10];
+        private int[] corEscolhidaR = new int[10];
+        private int[] corEscolhidaG = new int[10];
+        private int[] corEscolhidaB = new int[10];
         private bool[] temCorEscolhida = new bool[10];
         private int quantidadeCoresEscolhidas = 0;
 
@@ -172,8 +182,43 @@ namespace Projeto_Isocaedro
             };
         }
 
+        private int quantidadeSelecionada()
+        {
+            int quantidade = 0;
+
+            for (int i = 0; i < faceSelecionada.Length; i++)
+            {
+                if (faceSelecionada[i])
+                {
+                    quantidade++;
+                }
+            }
+
+            return quantidade;
+        }
+
+        private int faceDaPosicao(int posicao)
+        {
+            int contador = 0;
+
+            for (int i = 0; i < faceSelecionada.Length; i++)
+            {
+                if (faceSelecionada[i])
+                {
+                    if (contador == posicao)
+                    {
+                        return i;
+                    }
+
+                    contador++;
+                }
+            }
+
+            return -1;
+        }
+
         // ------------------------------------------------------------------
-        // Transformação (translação e escala)
+        // Transformacao (translacao e escala)
         // ------------------------------------------------------------------
 
         private Point[] TransformVertices()
@@ -185,30 +230,26 @@ namespace Projeto_Isocaedro
             float cx = drawPanel.Width / 2f + deslocaX;
             float cy = drawPanel.Height / 2f + deslocaY;
 
-            Point[] result = new Point[BaseVertices.Length];
+            int[] x = new int[baseX.Length];
+            int[] y = new int[baseY.Length];
 
-            for (int i = 0; i < BaseVertices.Length; i++)
+            for (int i = 0; i < baseX.Length; i++)
             {
-                float x0 = BaseVertices[i].X;
-                float y0 = BaseVertices[i].Y;
-
-                int x = (int)(cx + x0 * escala);
-                int y = (int)(cy - y0 * escala);
-
-                result[i] = new Point(x, y);
+                x[i] = (int)(cx + baseX[i] * escala);
+                y[i] = (int)(cy - baseY[i] * escala);
             }
 
-            return result;
+            return poligono(x, y);
         }
 
         // ------------------------------------------------------------------
         // Desenho
         // ------------------------------------------------------------------
 
-        private Point[] pontosDaFace(Point[] pts, Face f)
+        private Point[] pontosDaFace(Point[] pts, int face)
         {
-            int[] vx = new int[] { pts[f.VertexIndices[0]].X, pts[f.VertexIndices[1]].X, pts[f.VertexIndices[2]].X };
-            int[] vy = new int[] { pts[f.VertexIndices[0]].Y, pts[f.VertexIndices[1]].Y, pts[f.VertexIndices[2]].Y };
+            int[] vx = new int[] { pts[faceA[face]].X, pts[faceB[face]].X, pts[faceC[face]].X };
+            int[] vy = new int[] { pts[faceA[face]].Y, pts[faceB[face]].Y, pts[faceC[face]].Y };
             return poligono(vx, vy);
         }
 
@@ -216,14 +257,14 @@ namespace Projeto_Isocaedro
         {
             Pen canetaBorda = caneta(0, 0, 0);
 
-            for (int i = 0; i < faces.Length; i++)
+            for (int i = 0; i < faceA.Length; i++)
             {
-                Point[] tri = pontosDaFace(pts, faces[i]);
+                Point[] tri = pontosDaFace(pts, i);
 
-                Color corFace = faces[i].FillColor;
-                if (facesSelecionadas.Contains(i))
+                Color corFace = cores(corFaceR[i], corFaceG[i], corFaceB[i]);
+                if (faceSelecionada[i])
                 {
-                    corFace = acinzentaCor(corFace);
+                    corFace = acinzentaCor(corFaceR[i], corFaceG[i], corFaceB[i]);
                 }
 
                 SolidBrush pincelPreenchimento = preen_Area(corFace);
@@ -237,11 +278,11 @@ namespace Projeto_Isocaedro
         {
             Pen canetaSelecao = caneta(105, 105, 105, 4);
 
-            for (int i = 0; i < faces.Length; i++)
+            for (int i = 0; i < faceA.Length; i++)
             {
-                if (facesSelecionadas.Contains(i))
+                if (faceSelecionada[i])
                 {
-                    Point[] tri = pontosDaFace(pts, faces[i]);
+                    Point[] tri = pontosDaFace(pts, i);
                     desenhaPoligono(e, canetaSelecao, tri);
                 }
             }
@@ -249,7 +290,6 @@ namespace Projeto_Isocaedro
 
         private void drawPanel_Paint(object sender, PaintEventArgs e)
         {
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             Point[] pts = TransformVertices();
 
             desenhaFaces(e, pts);
@@ -262,26 +302,33 @@ namespace Projeto_Isocaedro
         }
 
         // ------------------------------------------------------------------
-        // Seleção dos números das faces
+        // Selecao dos numeros das faces
         // ------------------------------------------------------------------
+
+        private void desmarcaTodas()
+        {
+            for (int i = 0; i < faceSelecionada.Length; i++)
+            {
+                faceSelecionada[i] = false;
+            }
+        }
 
         private void selecionaSimples(int indice)
         {
-            facesSelecionadas.Clear();
-            facesSelecionadas.Add(indice);
+            desmarcaTodas();
+            faceSelecionada[indice] = true;
             ancoraSelecao = indice;
         }
 
         private void selecionaComControl(int indice)
         {
-            if (facesSelecionadas.Contains(indice))
+            if (faceSelecionada[indice])
             {
-                facesSelecionadas.Remove(indice);
+                faceSelecionada[indice] = false;
             }
             else
             {
-                facesSelecionadas.Add(indice);
-                facesSelecionadas.Sort();
+                faceSelecionada[indice] = true;
             }
 
             ancoraSelecao = indice;
@@ -303,28 +350,16 @@ namespace Projeto_Isocaedro
                 fim = ancoraSelecao;
             }
 
-            facesSelecionadas.Clear();
+            desmarcaTodas();
 
             for (int i = inicio; i <= fim; i++)
             {
-                facesSelecionadas.Add(i);
+                faceSelecionada[i] = true;
             }
         }
 
-        private void btnFace_Click(object sender, EventArgs e)
+        private void selecionaFace(int indice)
         {
-            Button botao = sender as Button;
-            if (botao == null)
-            {
-                return;
-            }
-
-            int indice = Array.IndexOf(botoesFace, botao);
-            if (indice < 0)
-            {
-                return;
-            }
-
             if (Control.ModifierKeys == Keys.Control)
             {
                 selecionaComControl(indice);
@@ -343,6 +378,56 @@ namespace Projeto_Isocaedro
             drawPanel.Invalidate();
         }
 
+        private void btnFace1_Click(object sender, EventArgs e)
+        {
+            selecionaFace(0);
+        }
+
+        private void btnFace2_Click(object sender, EventArgs e)
+        {
+            selecionaFace(1);
+        }
+
+        private void btnFace3_Click(object sender, EventArgs e)
+        {
+            selecionaFace(2);
+        }
+
+        private void btnFace4_Click(object sender, EventArgs e)
+        {
+            selecionaFace(3);
+        }
+
+        private void btnFace5_Click(object sender, EventArgs e)
+        {
+            selecionaFace(4);
+        }
+
+        private void btnFace6_Click(object sender, EventArgs e)
+        {
+            selecionaFace(5);
+        }
+
+        private void btnFace7_Click(object sender, EventArgs e)
+        {
+            selecionaFace(6);
+        }
+
+        private void btnFace8_Click(object sender, EventArgs e)
+        {
+            selecionaFace(7);
+        }
+
+        private void btnFace9_Click(object sender, EventArgs e)
+        {
+            selecionaFace(8);
+        }
+
+        private void btnFace10_Click(object sender, EventArgs e)
+        {
+            selecionaFace(9);
+        }
+
         private void atualizaBotoesFace()
         {
             for (int i = 0; i < botoesFace.Length; i++)
@@ -351,21 +436,21 @@ namespace Projeto_Isocaedro
 
                 if (temCorEscolhida[i])
                 {
-                    botao.BackColor = clareiaCor(coresEscolhidas[i]);
+                    botao.BackColor = clareiaCor(corEscolhidaR[i], corEscolhidaG[i], corEscolhidaB[i]);
                     botao.ForeColor = cores(0, 0, 0);
-                    botao.FlatAppearance.BorderColor = coresEscolhidas[i];
+                    botao.FlatAppearance.BorderColor = cores(corEscolhidaR[i], corEscolhidaG[i], corEscolhidaB[i]);
                     botao.FlatAppearance.BorderSize = 3;
                 }
-                else if (facesSelecionadas.Contains(i))
+                else if (faceSelecionada[i])
                 {
-                    botao.BackColor = SystemColors.Highlight;
-                    botao.ForeColor = SystemColors.HighlightText;
+                    botao.BackColor = cores(0, 120, 215);
+                    botao.ForeColor = cores(255, 255, 255);
                     botao.FlatAppearance.BorderColor = cores(0, 0, 0);
                     botao.FlatAppearance.BorderSize = 3;
                 }
                 else
                 {
-                    botao.BackColor = SystemColors.Control;
+                    botao.BackColor = cores(240, 240, 240);
                     botao.ForeColor = cores(0, 0, 0);
                     botao.FlatAppearance.BorderColor = cores(0, 0, 0);
                     botao.FlatAppearance.BorderSize = 2;
@@ -377,98 +462,105 @@ namespace Projeto_Isocaedro
         // Paleta de cores
         // ------------------------------------------------------------------
 
-        private Color corDaPaleta(Panel amostra)
+        public Color clareiaCor(int r, int g, int b)
         {
-            Color cor;
-
-            switch (amostra.Name)
-            {
-                case "panelRed":
-                    cor = cores(255, 0, 0);
-                    break;
-                case "panelGreen":
-                    cor = cores(0, 255, 0);
-                    break;
-                case "panelBlue":
-                    cor = cores(0, 0, 255);
-                    break;
-                case "panelYellow":
-                    cor = cores(255, 255, 0);
-                    break;
-                case "panelCyan":
-                    cor = cores(0, 255, 255);
-                    break;
-                case "panelMagenta":
-                    cor = cores(255, 0, 255);
-                    break;
-                case "panelOrange":
-                    cor = cores(255, 165, 0);
-                    break;
-                case "panelPurple":
-                    cor = cores(128, 0, 128);
-                    break;
-                case "panelBlack":
-                    cor = cores(0, 0, 0);
-                    break;
-                case "panelGray":
-                    cor = cores(128, 128, 128);
-                    break;
-                default:
-                    cor = cores(amostra.BackColor.R, amostra.BackColor.G, amostra.BackColor.B);
-                    break;
-            }
-
-            return cor;
+            int rc = (r + 255 * 4) / 5;
+            int gc = (g + 255 * 4) / 5;
+            int bc = (b + 255 * 4) / 5;
+            return cores(rc, gc, bc);
         }
 
-        public Color clareiaCor(Color cor)
+        public Color acinzentaCor(int r, int g, int b)
         {
-            int r = (cor.R + 255 * 4) / 5;
-            int g = (cor.G + 255 * 4) / 5;
-            int b = (cor.B + 255 * 4) / 5;
-            return cores(r, g, b);
+            int rc = (r * 85 + 128 * 15) / 100;
+            int gc = (g * 85 + 128 * 15) / 100;
+            int bc = (b * 85 + 128 * 15) / 100;
+            return cores(rc, gc, bc);
         }
 
-        public Color acinzentaCor(Color cor)
+        private void escolheCor(int r, int g, int b)
         {
-            int r = (cor.R * 85 + 128 * 15) / 100;
-            int g = (cor.G * 85 + 128 * 15) / 100;
-            int b = (cor.B * 85 + 128 * 15) / 100;
-            return cores(r, g, b);
-        }
-
-        private void panelCor_Click(object sender, EventArgs e)
-        {
-            Panel amostra = sender as Panel;
-            if (amostra == null)
-            {
-                return;
-            }
-
-            if (facesSelecionadas.Count == 0)
+            if (quantidadeSelecionada() == 0)
             {
                 MessageBox.Show("Nenhum número selecionado.\nSelecione um número antes de selecionar uma cor!",
                     "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (quantidadeCoresEscolhidas >= facesSelecionadas.Count)
+            if (quantidadeCoresEscolhidas >= quantidadeSelecionada())
             {
                 MessageBox.Show("Todos os números selecionados já receberam uma cor.",
                     "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            int indice = facesSelecionadas[quantidadeCoresEscolhidas];
-            coresEscolhidas[indice] = corDaPaleta(amostra);
+            int indice = faceDaPosicao(quantidadeCoresEscolhidas);
+            if (indice < 0)
+            {
+                return;
+            }
+
+            corEscolhidaR[indice] = r;
+            corEscolhidaG[indice] = g;
+            corEscolhidaB[indice] = b;
             temCorEscolhida[indice] = true;
             quantidadeCoresEscolhidas++;
 
             atualizaBotoesFace();
         }
 
+        private void panelRed_Click(object sender, EventArgs e)
+        {
+            escolheCor(255, 0, 0);
+        }
+
+        private void panelGreen_Click(object sender, EventArgs e)
+        {
+            escolheCor(0, 255, 0);
+        }
+
+        private void panelBlue_Click(object sender, EventArgs e)
+        {
+            escolheCor(0, 0, 255);
+        }
+
+        private void panelYellow_Click(object sender, EventArgs e)
+        {
+            escolheCor(255, 255, 0);
+        }
+
+        private void panelCyan_Click(object sender, EventArgs e)
+        {
+            escolheCor(0, 255, 255);
+        }
+
+        private void panelMagenta_Click(object sender, EventArgs e)
+        {
+            escolheCor(255, 0, 255);
+        }
+
+        private void panelOrange_Click(object sender, EventArgs e)
+        {
+            escolheCor(255, 165, 0);
+        }
+
+        private void panelPurple_Click(object sender, EventArgs e)
+        {
+            escolheCor(128, 0, 128);
+        }
+
+        private void panelBlack_Click(object sender, EventArgs e)
+        {
+            escolheCor(0, 0, 0);
+        }
+
+        private void panelGray_Click(object sender, EventArgs e)
+        {
+            escolheCor(128, 128, 128);
+        }
+
         // ------------------------------------------------------------------
-        // Aplicação das cores
+        // Aplicacao das cores
         // ------------------------------------------------------------------
 
         private void limpaCoresEscolhidas()
@@ -483,17 +575,19 @@ namespace Projeto_Isocaedro
 
         private void limpaSelecao()
         {
-            facesSelecionadas.Clear();
+            desmarcaTodas();
             ancoraSelecao = -1;
         }
 
         private void btnAplicarCores_Click(object sender, EventArgs e)
         {
-            for (int i = 0; i < faces.Length; i++)
+            for (int i = 0; i < corFaceR.Length; i++)
             {
                 if (temCorEscolhida[i])
                 {
-                    faces[i].FillColor = coresEscolhidas[i];
+                    corFaceR[i] = corEscolhidaR[i];
+                    corFaceG[i] = corEscolhidaG[i];
+                    corFaceB[i] = corEscolhidaB[i];
                 }
             }
 
@@ -530,18 +624,6 @@ namespace Projeto_Isocaedro
         {
             lblScale.Text = "Escala: " + tbScale.Value + "%";
             drawPanel.Invalidate();
-        }
-    }
-
-    public class Face
-    {
-        public int[] VertexIndices;
-        public Color FillColor;
-
-        public Face(int a, int b, int c)
-        {
-            VertexIndices = new int[] { a, b, c };
-            FillColor = Color.WhiteSmoke;
         }
     }
 }

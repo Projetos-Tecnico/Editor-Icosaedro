@@ -137,7 +137,7 @@
             this.btnFace1.TabIndex = 1;
             this.btnFace1.Text = "1";
             this.btnFace1.UseVisualStyleBackColor = true;
-            this.btnFace1.Click += new System.EventHandler(this.btnFace_Click);
+            this.btnFace1.Click += new System.EventHandler(this.btnFace1_Click);
             //
             // btnFace2
             //
@@ -149,7 +149,7 @@
             this.btnFace2.TabIndex = 2;
             this.btnFace2.Text = "2";
             this.btnFace2.UseVisualStyleBackColor = true;
-            this.btnFace2.Click += new System.EventHandler(this.btnFace_Click);
+            this.btnFace2.Click += new System.EventHandler(this.btnFace2_Click);
             //
             // btnFace3
             //
@@ -161,7 +161,7 @@
             this.btnFace3.TabIndex = 3;
             this.btnFace3.Text = "3";
             this.btnFace3.UseVisualStyleBackColor = true;
-            this.btnFace3.Click += new System.EventHandler(this.btnFace_Click);
+            this.btnFace3.Click += new System.EventHandler(this.btnFace3_Click);
             //
             // btnFace4
             //
@@ -173,7 +173,7 @@
             this.btnFace4.TabIndex = 4;
             this.btnFace4.Text = "4";
             this.btnFace4.UseVisualStyleBackColor = true;
-            this.btnFace4.Click += new System.EventHandler(this.btnFace_Click);
+            this.btnFace4.Click += new System.EventHandler(this.btnFace4_Click);
             //
             // btnFace5
             //
@@ -185,7 +185,7 @@
             this.btnFace5.TabIndex = 5;
             this.btnFace5.Text = "5";
             this.btnFace5.UseVisualStyleBackColor = true;
-            this.btnFace5.Click += new System.EventHandler(this.btnFace_Click);
+            this.btnFace5.Click += new System.EventHandler(this.btnFace5_Click);
             //
             // btnFace6
             //
@@ -197,7 +197,7 @@
             this.btnFace6.TabIndex = 6;
             this.btnFace6.Text = "6";
             this.btnFace6.UseVisualStyleBackColor = true;
-            this.btnFace6.Click += new System.EventHandler(this.btnFace_Click);
+            this.btnFace6.Click += new System.EventHandler(this.btnFace6_Click);
             //
             // btnFace7
             //
@@ -209,7 +209,7 @@
             this.btnFace7.TabIndex = 7;
             this.btnFace7.Text = "7";
             this.btnFace7.UseVisualStyleBackColor = true;
-            this.btnFace7.Click += new System.EventHandler(this.btnFace_Click);
+            this.btnFace7.Click += new System.EventHandler(this.btnFace7_Click);
             //
             // btnFace8
             //
@@ -221,7 +221,7 @@
             this.btnFace8.TabIndex = 8;
             this.btnFace8.Text = "8";
             this.btnFace8.UseVisualStyleBackColor = true;
-            this.btnFace8.Click += new System.EventHandler(this.btnFace_Click);
+            this.btnFace8.Click += new System.EventHandler(this.btnFace8_Click);
             //
             // btnFace9
             //
@@ -233,7 +233,7 @@
             this.btnFace9.TabIndex = 9;
             this.btnFace9.Text = "9";
             this.btnFace9.UseVisualStyleBackColor = true;
-            this.btnFace9.Click += new System.EventHandler(this.btnFace_Click);
+            this.btnFace9.Click += new System.EventHandler(this.btnFace9_Click);
             //
             // btnFace10
             //
@@ -245,7 +245,7 @@
             this.btnFace10.TabIndex = 10;
             this.btnFace10.Text = "10";
             this.btnFace10.UseVisualStyleBackColor = true;
-            this.btnFace10.Click += new System.EventHandler(this.btnFace_Click);
+            this.btnFace10.Click += new System.EventHandler(this.btnFace10_Click);
             //
             // lblCores
             //
@@ -266,7 +266,7 @@
             this.panelRed.Name = "panelRed";
             this.panelRed.Size = new System.Drawing.Size(64, 40);
             this.panelRed.TabIndex = 12;
-            this.panelRed.Click += new System.EventHandler(this.panelCor_Click);
+            this.panelRed.Click += new System.EventHandler(this.panelRed_Click);
             //
             // panelGreen
             //
@@ -277,7 +277,7 @@
             this.panelGreen.Name = "panelGreen";
             this.panelGreen.Size = new System.Drawing.Size(64, 40);
             this.panelGreen.TabIndex = 13;
-            this.panelGreen.Click += new System.EventHandler(this.panelCor_Click);
+            this.panelGreen.Click += new System.EventHandler(this.panelGreen_Click);
             //
             // panelBlue
             //
@@ -288,7 +288,7 @@
             this.panelBlue.Name = "panelBlue";
             this.panelBlue.Size = new System.Drawing.Size(64, 40);
             this.panelBlue.TabIndex = 14;
-            this.panelBlue.Click += new System.EventHandler(this.panelCor_Click);
+            this.panelBlue.Click += new System.EventHandler(this.panelBlue_Click);
             //
             // panelYellow
             //
@@ -299,7 +299,7 @@
             this.panelYellow.Name = "panelYellow";
             this.panelYellow.Size = new System.Drawing.Size(64, 40);
             this.panelYellow.TabIndex = 15;
-            this.panelYellow.Click += new System.EventHandler(this.panelCor_Click);
+            this.panelYellow.Click += new System.EventHandler(this.panelYellow_Click);
             //
             // panelCyan
             //
@@ -310,7 +310,7 @@
             this.panelCyan.Name = "panelCyan";
             this.panelCyan.Size = new System.Drawing.Size(64, 40);
             this.panelCyan.TabIndex = 16;
-            this.panelCyan.Click += new System.EventHandler(this.panelCor_Click);
+            this.panelCyan.Click += new System.EventHandler(this.panelCyan_Click);
             //
             // panelMagenta
             //
@@ -321,7 +321,7 @@
             this.panelMagenta.Name = "panelMagenta";
             this.panelMagenta.Size = new System.Drawing.Size(64, 40);
             this.panelMagenta.TabIndex = 17;
-            this.panelMagenta.Click += new System.EventHandler(this.panelCor_Click);
+            this.panelMagenta.Click += new System.EventHandler(this.panelMagenta_Click);
             //
             // panelOrange
             //
@@ -332,7 +332,7 @@
             this.panelOrange.Name = "panelOrange";
             this.panelOrange.Size = new System.Drawing.Size(64, 40);
             this.panelOrange.TabIndex = 18;
-            this.panelOrange.Click += new System.EventHandler(this.panelCor_Click);
+            this.panelOrange.Click += new System.EventHandler(this.panelOrange_Click);
             //
             // panelPurple
             //
@@ -343,7 +343,7 @@
             this.panelPurple.Name = "panelPurple";
             this.panelPurple.Size = new System.Drawing.Size(64, 40);
             this.panelPurple.TabIndex = 19;
-            this.panelPurple.Click += new System.EventHandler(this.panelCor_Click);
+            this.panelPurple.Click += new System.EventHandler(this.panelPurple_Click);
             //
             // panelBlack
             //
@@ -354,7 +354,7 @@
             this.panelBlack.Name = "panelBlack";
             this.panelBlack.Size = new System.Drawing.Size(64, 40);
             this.panelBlack.TabIndex = 20;
-            this.panelBlack.Click += new System.EventHandler(this.panelCor_Click);
+            this.panelBlack.Click += new System.EventHandler(this.panelBlack_Click);
             //
             // panelGray
             //
@@ -365,7 +365,7 @@
             this.panelGray.Name = "panelGray";
             this.panelGray.Size = new System.Drawing.Size(64, 40);
             this.panelGray.TabIndex = 21;
-            this.panelGray.Click += new System.EventHandler(this.panelCor_Click);
+            this.panelGray.Click += new System.EventHandler(this.panelGray_Click);
             //
             // btnAplicarCores
             //
